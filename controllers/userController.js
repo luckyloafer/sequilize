@@ -1,8 +1,11 @@
 var db = require("../models");
 
+var DataTypes = db.DataTypes
 var User = db.user;
 var Contact = db.contact;
 var Education = db.education;
+var Customer = db.customer;
+var Profile = db.profile;
 
 const { Sequelize, where, QueryTypes } = require("sequelize");
 
@@ -292,6 +295,82 @@ var creatorUser = async (req, res) => {
   res.status(200).json({ data: data });
 };
 
+var mnAssociationsUser = async (req, res) => {
+  // const amidala = await Customer.create({ username: "p4dm3", points: 1000 });
+  // const queen = await Profile.create({ name: "Queen" });
+  // await amidala.addProfile(queen, { through: { selfGranted: false } });
+  // const result = await Customer.findOne({
+  //   where: { username: "p4dm3" },
+  //   include: Profile,
+  // });
+  const amidala = await Customer.create(
+    {
+      username: "p4dm3",
+      points: 1000,
+      profiles: [
+        {
+          name: "Queen",
+          User_Profile: {
+            selfGranted: true,
+          },
+        },
+      ],
+    },
+    {
+      include: Profile,
+    }
+  );
+
+  const result = await Customer.findOne({
+    where: { username: "p4dm3" },
+    include: Profile,
+  });
+  res.status(200).json({ data: result });
+};
+
+var transactionsUser = async (req, res) => {
+  var t = await db.sequelize.transaction();
+
+  var data = await User.create({ firstName: "Rahul", lastName: "kumar" });
+  if (data && data.id) {
+    try {
+      await Contact.create({
+        permanent_address: "abc2",
+        current_address: "xyz2",
+        UserId: null,
+      });
+
+      await t.commit();
+      data["transaction_status"] = "commit";
+    } catch (error) {
+      await t.rollback();
+      data["transaction_status"] = "rollback";
+      await User.destroy({
+        where: {
+          id: data.id,
+        },
+      });
+    }
+  }
+
+  res.status(200).json({ data: data });
+};
+
+var queryInterfaceUser = async (req, res) => {
+  var data = {};
+   const queryInterface = db.sequelize.getQueryInterface();
+  // queryInterface.createTable('Person', {
+  //   name: DataTypes.STRING,
+  //   isBetaMember: {
+  //     type: DataTypes.BOOLEAN,
+  //     defaultValue: false,
+  //     allowNull: false,
+  //   },
+  // });
+  queryInterface.addColumn('Person', 'petName', { type: DataTypes.STRING });
+  res.status(200).json({ data: data });
+};
+
 module.exports = {
   addUser,
   getUsers,
@@ -308,4 +387,7 @@ module.exports = {
   loadingUser,
   eagerUser,
   creatorUser,
+  mnAssociationsUser,
+  transactionsUser,
+  queryInterfaceUser,
 };

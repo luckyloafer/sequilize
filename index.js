@@ -27,8 +27,9 @@ app.get('/many-to-many',userCtrl.manyToMany)
 app.get('/loading',userCtrl.loadingUser);
 app.get('/eager',userCtrl.eagerUser);
 app.get('/creator',userCtrl.creatorUser);
-
-
+app.get('/m-n-associations',userCtrl.mnAssociationsUser)
+app.get('/transactions',userCtrl.transactionsUser)
+app.get('/query-interface',userCtrl.queryInterfaceUser)
 
 
 app.listen(3000,()=>{
